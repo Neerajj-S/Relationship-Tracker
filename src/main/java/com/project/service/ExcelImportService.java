@@ -20,7 +20,7 @@ public class ExcelImportService {
     }
 
     public static void importDataFromExcel(SessionFactory sf) {
-        String filePath = "family_data.xlsx";
+        String filePath = "C:\\Users\\neera\\eclipse-workspace\\RelativesConnection\\src\\main\\resources\\family_data.xlsx";
 
         try (FileInputStream fis = new FileInputStream(new File(filePath));
              Workbook workbook = new XSSFWorkbook(fis);
