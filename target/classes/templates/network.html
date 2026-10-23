@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Family Network Graph</title>
+    <!-- Include Vis.js library -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f6f9;
+        }
+        h2 {
+            color: #1F4E78;
+        }
+        #mynetwork {
+            width: 100%;
+            height: 700px;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .instructions {
+            margin-bottom: 15px;
+            color: #475569;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Family Household Network Graph</h2>
+    <div class="instructions">
+        <p>💡 Tip: Drag nodes to rearrange them. Physics will stabilize and turn off automatically so you can freely position your family units.</p>
+    </div>
+    
+    <div id="mynetwork"></div>
+
+    <script type="text/javascript">
+        // Fetch network data from the Spring Boot REST endpoint
+        fetch('/api/network-data')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('mynetwork');
+
+                const nodes = new vis.DataSet(data.nodes);
+                const edges = new vis.DataSet(data.edges);
+
+                const visData = {
+                    nodes: nodes,
+                    edges: edges
+                };
+
+                const options = {
+                    nodes: {
+                        shape: 'box', // Rectangular box shape to cleanly hold multi-line text
+                        margin: 12,
+                        font: {
+                            size: 13,
+                            face: 'Arial',
+                            align: 'left',
+                            color: '#1e293b'
+                        },
+                        color: {
+                            background: '#f8fafc',
+                            border: '#3b82f6',
+                            highlight: {
+                                background: '#e2e8f0',
+                                border: '#1d4ed8'
+                            }
+                        },
+                        borderWidth: 2,
+                        shadow: true
+                    },
+                    edges: {
+                        arrows: {
+                            to: { enabled: true, scaleFactor: 0.8 }
+                        },
+                        font: {
+                            align: 'top',
+                            size: 12,
+                            background: '#ffffff'
+                        },
+                        color: { color: '#64748b' },
+                        width: 2
+                    },
+                    physics: {
+                        enabled: true,
+                        solver: 'forceAtlas2Based',
+                       forceAtlas2Based: {
+                            gravitationalConstant: -250,
+                            centralGravity: 0.01,
+                            springLength: 70,          
+                            springConstant: 0.08,
+                            avoidOverlap: 1.0             
+                        },
+                        stabilization: {
+                            enabled: true,
+                            iterations: 1500              
+                        }
+                    },
+                    interaction: {
+                        hover: true,
+                        dragNodes: true
+                    }
+                };
+
+                // Initialize network
+                const network = new vis.Network(container, visData, options);
+
+                // Turn off physics automatically once stabilized so nodes don't snap back when dragged
+                network.once("stabilizationIterationsDone", function () {
+                    network.setOptions({ physics: { enabled: false } });
+                });
+            })
+            .catch(error => console.error('Error loading network data:', error));
+    </script>
+</body>
+</html>

@@ -1,17 +1,21 @@
-package com.project.service;
+package org.relativesdb.connection.service;
 
-import com.project.model.Citizen;
+import org.relativesdb.connection.model.Citizen;
+import org.relativesdb.connection.repository.CitizenRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.time.LocalDate;
 
+@Service
 public class ExcelImportService {
+
+    @Autowired
+    private CitizenRepository citizenRepository;
 
     private static String getCellAsString(Cell cell) {
         if (cell == null) return "";
@@ -19,12 +23,11 @@ public class ExcelImportService {
         return formatter.formatCellValue(cell).trim();
     }
 
-    public static void importDataFromExcel(SessionFactory sf) {
+    public void importDataFromExcel() {
         String filePath = "C:\\Users\\neera\\eclipse-workspace\\RelativesConnection\\src\\main\\resources\\family_data.xlsx";
 
         try (FileInputStream fis = new FileInputStream(new File(filePath));
-             Workbook workbook = new XSSFWorkbook(fis);
-             Session session = sf.openSession()) {
+             Workbook workbook = new XSSFWorkbook(fis)) {
 
             Sheet sheet = workbook.getSheetAt(0);
             int successCount = 0;
@@ -33,7 +36,6 @@ public class ExcelImportService {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 
-                Transaction tx = session.beginTransaction();
                 try {
                     Citizen citizen = new Citizen();
 
@@ -44,7 +46,11 @@ public class ExcelImportService {
                     String dobString = getCellAsString(row.getCell(4));
                     
                     if (nationalId.isEmpty() || fullName.isEmpty()) {
-                        tx.rollback();
+                        continue;
+                    }
+
+                    // Check if citizen already exists to prevent duplicate key crashes
+                    if (citizenRepository.findByNationalId(nationalId) != null) {
                         continue;
                     }
 
@@ -59,29 +65,27 @@ public class ExcelImportService {
                     } else {
                         String headNid = getCellAsString(row.getCell(5));
                         if (!headNid.isEmpty()) {
-                            Citizen head = session.createQuery("FROM Citizen WHERE nationalId = :nid", Citizen.class)
-                                                  .setParameter("nid", headNid).uniqueResult();
+                            Citizen head = citizenRepository.findByNationalId(headNid);
                             if (head != null) {
                                 citizen.setFamilyHead(head);
                                 citizen.setRelationToHead(getCellAsString(row.getCell(6)).toUpperCase());
                             } else {
-                                tx.rollback();
+                                System.out.println("Row " + (i + 1) + ": Family Head " + headNid + " not found in DB. Skipping.");
                                 continue;
                             }
                         }
                     }
 
-                    session.persist(citizen);
-                    tx.commit();
+                    citizenRepository.save(citizen);
                     successCount++;
 
                 } catch (Exception rowEx) {
-                    tx.rollback();
+                    System.out.println("Error on row " + (i + 1) + ": " + rowEx.getMessage());
                 }
             }
             System.out.println("\nExcel Import Complete! Successfully imported " + successCount + " records.");
         } catch (Exception e) {
-            System.out.println("Failed to read Excel file: " + e.getMessage());
+            System.out.println("Failed to read Excel file (Make sure family_data.xlsx is in your project root folder): " + e.getMessage());
         }
     }
 }

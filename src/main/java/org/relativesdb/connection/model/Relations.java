@@ -1,4 +1,5 @@
-package com.project.model;
+package org.relativesdb.connection.model;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -8,21 +9,18 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-
 @Entity
 @Table(name = "family_relations")
 public class Relations {
 
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Points to the Head of Family A
     @ManyToOne
     @JoinColumn(name = "family_a_head_national_id", referencedColumnName = "national_id")
     private Citizen familyAHead;
 
-    // Points to the Head of Family B
     @ManyToOne
     @JoinColumn(name = "family_b_head_national_id", referencedColumnName = "national_id")
     private Citizen familyBHead;
@@ -30,10 +28,8 @@ public class Relations {
     @Column(name = "relation_type")
     private String relationType; // e.g., "IN_LAWS", "ALLIED_FAMILY", "EXTENDED"
 
-    // Default Constructor
     public Relations() {}
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }

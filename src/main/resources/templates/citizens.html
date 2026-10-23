@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Relative Identification System</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f7f6; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #1F4E78; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+    </style>
+</head>
+<body>
+
+    <h1>Registered Citizens Registry</h1>
+    <p>Viewing all household members and family heads stored in MySQL:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>National ID</th>
+                <th>Full Name</th>
+                <th>Gender</th>
+                <th>Date of Birth</th>
+                <th>Relation to Head</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            <tr th:each="c : ${citizensList}">
+                <td th:text="${c.id}">1</td>
+                <td th:text="${c.nationalId}">NID</td>
+                <td th:text="${c.fullName}">Name</td>
+                <td th:text="${c.gender}">Gender</td>
+                <td th:text="${c.dateOfBirth}">DOB</td>
+                <td th:text="${c.relationToHead}">Relation</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>

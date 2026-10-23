@@ -1,4 +1,4 @@
-package com.project.model;
+package org.relativesdb.connection.model;
 import java.time.LocalDate;
 
 import jakarta.persistence.Column;
