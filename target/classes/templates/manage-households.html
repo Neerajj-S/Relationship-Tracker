@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Households</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background-color: #f8fafc; color: #1e293b; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; background-color: #1e3a8a; padding: 14px 28px; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav-brand { font-size: 18px; font-weight: bold; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-item { color: #dbeafe; text-decoration: none; font-weight: 500; font-size: 14px; }
+        .nav-item:hover { color: #ffffff; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 20px; }
+        .card { background: white; padding: 24px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card h3 { margin-top: 0; color: #1e3a8a; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #475569; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        button { background-color: #1e3a8a; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; }
+        button:hover { background-color: #1e40af; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Genealogy Semantics Hub</div>
+        <div class="nav-links">
+            <a href="/family-network" class="nav-item">Network Visualizer</a>
+            <a href="/relations-table" class="nav-item">Kinship Matrix</a>
+            <a href="/manage-households" class="nav-item" style="color: #ffffff; font-weight: bold;">Household Management</a>
+            <a href="/link-alliances" class="nav-item">Link Alliances</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Household Operations</h2>
+        <p>Manage members, promote children to household heads, and structure family branches.</p>
+
+        <div class="grid">
+            <div class="card">
+                <h3>Add Household Member</h3>
+                <form action="/api/households/add-member" method="post">
+                    <div class="form-group">
+                        <label>National ID (NID)</label>
+                        <input type="text" name="nationalId" required placeholder="e.g., NID-1004" />
+                    </div>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="fullName" required placeholder="e.g., Rajesh Sharma" />
+                    </div>
+                    <div class="form-group">
+                        <label>Relation to Head</label>
+                        <select name="relationToHead">
+                            <option value="SELF">SELF (Head of Household)</option>
+                            <option value="SPOUSE">SPOUSE</option>
+                            <option value="CHILD">CHILD</option>
+                            <option value="IN_LAW">IN_LAW</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Assigned Family Head</label>
+                        <select name="familyHeadId">
+                            <option value="">None (Is Self Head)</option>
+                            <option th:each="head : ${familyHeads}" th:value="${head.nationalId}" th:text="${head.fullName + ' (' + head.nationalId + ')'}"></option>
+                        </select>
+                    </div>
+                    <button type="submit">Add Citizen</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Promote Child to Family Head</h3>
+                <form action="/api/households/promote-child" method="post">
+                    <div class="form-group">
+                        <label>Select Member to Promote</label>
+                        <select name="childNid" required>
+                            <option value="">-- Select Member --</option>
+                            <option th:each="member : ${promotableMembers}" th:value="${member.nationalId}" th:text="${member.fullName + ' (Role: ' + member.relationToHead + ')'}"></option>
+                        </select>
+                    </div>
+                    <button type="submit" style="background-color: #047857;">Promote to Household Head</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

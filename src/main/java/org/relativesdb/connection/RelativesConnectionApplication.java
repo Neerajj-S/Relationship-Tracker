@@ -40,7 +40,7 @@ public class RelativesConnectionApplication implements CommandLineRunner {
         	System.out.print("Enter your choice (1-5): ");
 
             int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:

@@ -2,120 +2,118 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Family Network Graph</title>
-    <!-- Include Vis.js library -->
+    <title>Family Network Visualizer</title>
+    <!-- Include Vis.js Network CDN -->
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f6f9;
-        }
-        h2 {
-            color: #1F4E78;
-        }
-        #mynetwork {
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; background-color: #f8fafc; color: #1e293b; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; background-color: #1e3a8a; padding: 14px 28px; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav-brand { font-size: 18px; font-weight: bold; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-item { color: #dbeafe; text-decoration: none; font-weight: 500; font-size: 14px; }
+        .nav-item:hover { color: #ffffff; }
+        
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        /* CRITICAL: The network container MUST have a defined height */
+        #network-container {
             width: 100%;
-            height: 700px;
-            border: 1px solid #cbd5e1;
-            background-color: #ffffff;
+            height: 600px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-        .instructions {
-            margin-bottom: 15px;
-            color: #475569;
-            font-size: 14px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
     </style>
 </head>
 <body>
 
-    <h2>Family Household Network Graph</h2>
-    <div class="instructions">
-        <p>💡 Tip: Drag nodes to rearrange them. Physics will stabilize and turn off automatically so you can freely position your family units.</p>
+    <!-- Shared Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-brand">Genealogy Semantics Hub</div>
+        <div class="nav-links">
+            <a href="/family-network" class="nav-item" style="color: #ffffff; font-weight: bold;">Network Visualizer</a>
+            <a href="/relations-table" class="nav-item">Kinship Matrix</a>
+            <a href="/manage-households" class="nav-item">Household Management</a>
+            <a href="/link-alliances" class="nav-item">Link Alliances</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Interactive Household Network</h2>
+        <p>Visualizing family units and cross-household alliance links.</p>
+        
+        <!-- Vis.js Graph Canvas Container -->
+        <div id="network-container"></div>
     </div>
-    
-    <div id="mynetwork"></div>
 
-    <script type="text/javascript">
-        // Fetch network data from the Spring Boot REST endpoint
-        fetch('/api/network-data')
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById('mynetwork');
+    <script th:inline="javascript">
+        // Load data passed from WebController
+        var citizens = /*[[${citizens}]]*/ [];
+        var relations = /*[[${relations}]]*/ [];
 
-                const nodes = new vis.DataSet(data.nodes);
-                const edges = new vis.DataSet(data.edges);
+        // Build Vis.js Nodes
+        var nodesArray = citizens.map(function(c) {
+            var isHead = "SELF".equalsIgnoreCase ? ("SELF".equalsIgnoreCase(c.relationToHead)) : (c.relationToHead === 'SELF' || c.relationToHead === 'self');
+            return {
+                id: c.nationalId,
+                label: c.fullName + "\n(" + c.relationToHead + ")",
+                color: isHead ? '#1e3a8a' : '#3b82f6',
+                font: { color: isHead ? '#ffffff' : '#1e293b' },
+                shape: isHead ? 'box' : 'ellipse'
+            };
+        });
 
-                const visData = {
-                    nodes: nodes,
-                    edges: edges
-                };
+        // Build Vis.js Edges (Household internal structure + Inter-family alliances)
+        var edgesArray = [];
 
-                const options = {
-                    nodes: {
-                        shape: 'box', // Rectangular box shape to cleanly hold multi-line text
-                        margin: 12,
-                        font: {
-                            size: 13,
-                            face: 'Arial',
-                            align: 'left',
-                            color: '#1e293b'
-                        },
-                        color: {
-                            background: '#f8fafc',
-                            border: '#3b82f6',
-                            highlight: {
-                                background: '#e2e8f0',
-                                border: '#1d4ed8'
-                            }
-                        },
-                        borderWidth: 2,
-                        shadow: true
-                    },
-                    edges: {
-                        arrows: {
-                            to: { enabled: true, scaleFactor: 0.8 }
-                        },
-                        font: {
-                            align: 'top',
-                            size: 12,
-                            background: '#ffffff'
-                        },
-                        color: { color: '#64748b' },
-                        width: 2
-                    },
-                    physics: {
-                        enabled: true,
-                        solver: 'forceAtlas2Based',
-                       forceAtlas2Based: {
-                            gravitationalConstant: -250,
-                            centralGravity: 0.01,
-                            springLength: 70,          
-                            springConstant: 0.08,
-                            avoidOverlap: 1.0             
-                        },
-                        stabilization: {
-                            enabled: true,
-                            iterations: 1500              
-                        }
-                    },
-                    interaction: {
-                        hover: true,
-                        dragNodes: true
-                    }
-                };
-
-                // Initialize network
-                const network = new vis.Network(container, visData, options);
-
-                // Turn off physics automatically once stabilized so nodes don't snap back when dragged
-                network.once("stabilizationIterationsDone", function () {
-                    network.setOptions({ physics: { enabled: false } });
+        // 1. Internal household links (Head -> Member)
+        citizens.forEach(function(c) {
+            if (c.familyHead && c.familyHead.nationalId) {
+                edgesArray.push({
+                    from: c.familyHead.nationalId,
+                    to: c.nationalId,
+                    label: c.relationToHead,
+                    arrows: 'to',
+                    color: { color: '#94a3b8' }
                 });
-            })
-            .catch(error => console.error('Error loading network data:', error));
+            }
+        });
+
+        // 2. Inter-family alliance links (Head A <-> Head B)
+        relations.forEach(function(r) {
+            if (r.familyAHead && r.familyBHead) {
+                edgesArray.push({
+                    from: r.familyAHead.nationalId,
+                    to: r.familyBHead.nationalId,
+                    label: r.relationType,
+                    arrows: 'from,to',
+                    color: { color: '#ef4444' },
+                    width: 2
+                });
+            }
+        });
+
+        var container = document.getElementById('network-container');
+        var data = {
+            nodes: new vis.DataSet(nodesArray),
+            edges: new vis.DataSet(edgesArray)
+        };
+        var options = {
+            physics: {
+                solver: 'forceAtlas2Based',
+                forceAtlas2Based: {
+                    gravitationalConstant: -50,
+                    centralGravity: 0.01,
+                    springLength: 100,
+                    springConstant: 0.08,
+                    avoidOverlap: 1.0
+                },
+                maxVelocity: 50,
+                minVelocity: 0.1
+            }
+        };
+        var network = new vis.Network(container, data, options);
     </script>
+
 </body>
 </html>
