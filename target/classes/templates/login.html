@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Relationship Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h2 { color: #1e3a8a; margin-bottom: 10px; }
+        p { color: #64748b; font-size: 14px; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 8px; color: #334155; }
+        select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 14px; background: #fff; }
+        button { width: 100%; background-color: #1e3a8a; color: white; padding: 12px; border: none; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        button:hover { background-color: #1e40af; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h2>Relationship Tracker</h2>
+        <p>Select your profile to sign in and view your kinship scope.</p>
+        
+        <form th:action="@{/login}" method="post">
+            <div class="form-group">
+                <label for="nationalId">Select Citizen Profile:</label>
+                <select id="nationalId" name="nationalId" required>
+                    <option value="" disabled selected>-- Choose your profile --</option>
+                    <option th:each="c : ${citizens}" 
+                            th:value="${c.nationalId}" 
+                            th:text="${c.fullName + ' (' + (c.relationToHead != null ? c.relationToHead : 'Member') + ')'}">
+                    </option>
+                </select>
+            </div>
+            <button type="submit">Sign In</button>
+        </form>
+    </div>
+
+</body>
+</html>

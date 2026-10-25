@@ -37,7 +37,7 @@ public class RelativesConnectionApplication implements CommandLineRunner {
         	System.out.println("4. Promote Existing Child to New Head");
         	System.out.println("5. Transfer Family Members to New Head");
         	System.out.println("6. Exit");
-        	System.out.print("Enter your choice (1-5): ");
+        	System.out.print("Enter your choice (1-6): ");
 
             int choice = scanner.nextInt();
             scanner.nextLine();

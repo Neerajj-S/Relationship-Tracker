@@ -2,69 +2,109 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Member Kinship Matrix</title>
+    <title>Kinship Matrix - Relationship Tracker</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; background-color: #f8fafc; color: #1e293b; }
         .navbar { display: flex; justify-content: space-between; align-items: center; background-color: #1e3a8a; padding: 14px 28px; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .nav-brand { font-size: 18px; font-weight: bold; }
-        .nav-links { display: flex; gap: 20px; }
+        .nav-links { display: flex; gap: 20px; align-items: center; }
         .nav-item { color: #dbeafe; text-decoration: none; font-weight: 500; font-size: 14px; }
         .nav-item:hover { color: #ffffff; }
 
         .container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
-        table { width: 100%; border-collapse: collapse; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .user-banner { background: #eff6ff; border-left: 4px solid #1d4ed8; padding: 12px 18px; margin-bottom: 25px; border-radius: 4px; font-size: 14px; display: block;}
+        
+        table { width: 100%; border-collapse: collapse; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; }
         th, td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
         th { background-color: #1e3a8a; color: white; font-weight: 600; font-size: 13px; text-transform: uppercase; }
         tr:hover { background-color: #f1f5f9; }
+        
         .badge { background-color: #dbeafe; color: #1d4ed8; padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: bold; display: inline-block; }
         .family-tag { font-size: 11px; color: #64748b; display: block; margin-top: 2px; }
-        h2 { color: #1e3a8a; margin-top: 0; }
+        h2 { color: #1e3a8a; margin-top: 10px; margin-bottom: 5px; }
+        p { color: #64748b; margin-top: 0; margin-bottom: 15px; font-size: 14px; }
+        
+        .admin-badge { background-color: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .logout-btn { background: #dc2626; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: 500; }
+        .logout-btn:hover { background: #b91c1c; }
     </style>
 </head>
 <body>
 
     <!-- Shared Navigation Bar -->
     <nav class="navbar">
-        <div class="nav-brand">Genealogy Semantics Hub</div>
+        <div class="nav-brand">Relationship Tracker</div>
         <div class="nav-links">
             <a href="/family-network" class="nav-item">Network Visualizer</a>
             <a href="/relations-table" class="nav-item" style="color: #ffffff; font-weight: bold;">Kinship Matrix</a>
-            <a href="/manage-households" class="nav-item">Household Management</a>
-            <a href="/link-alliances" class="nav-item">Link Alliances</a>
+            <a th:if="${isHead}" href="/manage-households" class="nav-item">Household Management</a>
+            <a th:if="${isHead}" href="/link-alliances" class="nav-item">Link Alliances</a>
+            
+            <a href="/logout" style="background: #dc2626; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: 500;">Switch User</a>
         </div>
     </nav>
 
     <div class="container">
-        <h2>All-Member Kinship Matrix</h2>
-        <p>Cross-household relationship mapping displayed side-by-side between members.</p>
+        <!-- Logged-in User Context Banner -->
+    	<div class="user-banner">
+            Logged in as: <strong th:text="${currentUser != null ? currentUser.fullName : 'Guest'}">User Name</strong> 
+            <span th:if="${isHead}" class="admin-badge">Household Head (Full Access)</span>
+            <span th:unless="${isHead}" class="admin-badge" style="background-color: #fef3c7; color: #b45309;">Member View (Restricted)</span>
+        </div>
+
+        <!-- SECTION 1: HOUSEHOLD MEMBERS -->
+        <h2>My Household Family</h2>
+        <p>Family members living within your immediate household and how they relate to you.</p>
 
         <table>
             <thead>
                 <tr>
-                    <th style="width: 30%;">Person A</th>
-                    <th style="width: 20%;">Relation (A → B)</th>
-                    <th style="width: 20%;">Relation (B → A)</th>
-                    <th style="width: 30%;">Person B</th>
+                    <th style="width: 30%;">You</th>
+                    <th style="width: 20%;">Your Relation to Them</th>
+                    <th style="width: 20%;">Their Relation to You</th>
+                    <th style="width: 30%;">Family Member</th>
                 </tr>
             </thead>
             <tbody>
-                <tr th:if="${#lists.isEmpty(matrix)}">
-                    <td colspan="4" style="text-align: center; color: #64748b; padding: 40px;">No inter-family alliances found. Link families using the Link Alliances menu above first!</td>
+                <tr th:if="${#lists.isEmpty(internalMatrix)}">
+                    <td colspan="4" style="text-align: center; color: #64748b; padding: 30px;">No other members registered in your household.</td>
                 </tr>
-                <tr th:each="row : ${matrix}">
+                <tr th:each="row : ${internalMatrix}">
+                    <td><strong th:text="${row.personA}">You</strong></td>
+                    <td><span class="badge" th:text="${row.relationAtoB}">Relation A-B</span></td>
+                    <td><span class="badge" style="background-color: #f3e8ff; color: #6b21a8;" th:text="${row.relationBtoA}">Relation B-A</span></td>
                     <td>
-                        <strong th:text="${row.personA}">Person A</strong>
-                        <span class="family-tag" th:text="'Family Head: ' + ${row.personAHead}">Family A</span>
+                        <strong th:text="${row.personB}">Member</strong>
+                        <span class="family-tag" th:text="'Household Head: ' + ${row.personBHead}">Head</span>
                     </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- SECTION 2: ALLIED FAMILY MEMBERS -->
+        <h2>Allied Family Members</h2>
+        <p>Relatives from connected allied households and how they relate to you.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 30%;">You</th>
+                    <th style="width: 20%;">Your Relation to Them</th>
+                    <th style="width: 20%;">Their Relation to You</th>
+                    <th style="width: 30%;">Allied Relative</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(alliedMatrix)}">
+                    <td colspan="4" style="text-align: center; color: #64748b; padding: 30px;">No external allied family connections found.</td>
+                </tr>
+                <tr th:each="row : ${alliedMatrix}">
+                    <td><strong th:text="${row.personA}">You</strong></td>
+                    <td><span class="badge" th:text="${row.relationAtoB}">Relation A-B</span></td>
+                    <td><span class="badge" style="background-color: #f3e8ff; color: #6b21a8;" th:text="${row.relationBtoA}">Relation B-A</span></td>
                     <td>
-                        <span class="badge" th:text="${row.relationAtoB}">Relation A-B</span>
-                    </td>
-                    <td>
-                        <span class="badge" style="background-color: #f3e8ff; color: #6b21a8;" th:text="${row.relationBtoA}">Relation B-A</span>
-                    </td>
-                    <td>
-                        <strong th:text="${row.personB}">Person B</strong>
-                        <span class="family-tag" th:text="'Family Head: ' + ${row.personBHead}">Family B</span>
+                        <strong th:text="${row.personB}">Relative</strong>
+                        <span class="family-tag" th:text="'Household Head: ' + ${row.personBHead}">Head</span>
                     </td>
                 </tr>
             </tbody>

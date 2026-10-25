@@ -11,6 +11,8 @@
         .nav-brand { font-size: 18px; font-weight: bold; }
         .nav-links { display: flex; gap: 20px; }
         .nav-item { color: #dbeafe; text-decoration: none; font-weight: 500; font-size: 14px; }
+        .user-banner { background: #eff6ff; border-left: 4px solid #1d4ed8; padding: 12px 18px; margin-bottom: 25px; border-radius: 4px; font-size: 14px; display: block;}
+        .admin-badge { background-color: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
         .nav-item:hover { color: #ffffff; }
         
         .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
@@ -27,18 +29,26 @@
 </head>
 <body>
 
-    <!-- Shared Navigation Bar -->
     <nav class="navbar">
-        <div class="nav-brand">Genealogy Semantics Hub</div>
-        <div class="nav-links">
-            <a href="/family-network" class="nav-item" style="color: #ffffff; font-weight: bold;">Network Visualizer</a>
-            <a href="/relations-table" class="nav-item">Kinship Matrix</a>
-            <a href="/manage-households" class="nav-item">Household Management</a>
-            <a href="/link-alliances" class="nav-item">Link Alliances</a>
-        </div>
-    </nav>
+    <div class="nav-brand">Relationship Tracker</div>
+    <div class="nav-links" style="display: flex; align-items: center; gap: 20px;">
+        <a href="/family-network" class="nav-item">Network Visualizer</a>
+        <a href="/relations-table" class="nav-item" style="color: #ffffff; font-weight: bold;">Kinship Matrix</a>
+        <a th:if="${isHead}" href="/manage-households" class="nav-item">Household Management</a>
+        <a th:if="${isHead}" href="/link-alliances" class="nav-item">Link Alliances</a>
+        
+        <a href="/logout" style="background: #dc2626; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: 500;">Switch User</a>
+    </div>
+	</nav>
 
     <div class="container">
+    
+    	<div class="user-banner">
+            Logged in as: <strong th:text="${currentUser != null ? currentUser.fullName : 'Guest'}">User Name</strong> 
+            <span th:if="${isHead}" class="admin-badge">Household Head (Full Access)</span>
+            <span th:unless="${isHead}" class="admin-badge" style="background-color: #fef3c7; color: #b45309;">Member View (Restricted)</span>
+        </div>
+        
         <h2>Interactive Household Network</h2>
         <p>Visualizing family units and cross-household alliance links.</p>
         
@@ -102,7 +112,7 @@
             physics: {
                 solver: 'forceAtlas2Based',
                 forceAtlas2Based: {
-                    gravitationalConstant: -50,
+                    gravitationalConstant: -200,
                     centralGravity: 0.01,
                     springLength: 100,
                     springConstant: 0.08,

@@ -26,7 +26,13 @@ public class Relations {
     private Citizen familyBHead;
 
     @Column(name = "relation_type")
-    private String relationType; // e.g., "IN_LAWS", "ALLIED_FAMILY", "EXTENDED"
+    private String relationType;
+    
+    @ManyToOne
+    @JoinColumn(name = "sibling_member_id")
+    private Citizen siblingMember;
+
+
 
     public Relations() {}
 
@@ -60,5 +66,13 @@ public class Relations {
 
     public void setRelationType(String relationType) {
         this.relationType = relationType;
+    }
+    
+    public Citizen getSiblingMember() { 
+    	return siblingMember; 
+    }
+    
+    public void setSiblingMember(Citizen siblingMember) { 
+    	this.siblingMember = siblingMember; 
     }
 }

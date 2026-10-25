@@ -49,7 +49,6 @@ public class ExcelImportService {
                         continue;
                     }
 
-                    // Check if citizen already exists to prevent duplicate key crashes
                     if (citizenRepository.findByNationalId(nationalId) != null) {
                         continue;
                     }

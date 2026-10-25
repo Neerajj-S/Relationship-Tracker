@@ -19,20 +19,31 @@
         input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
         button { background-color: #1e3a8a; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; }
         button:hover { background-color: #1e40af; }
+        .user-banner { background: #eff6ff; border-left: 4px solid #1d4ed8; padding: 12px 18px; margin-bottom: 25px; border-radius: 4px; font-size: 14px; display: block;}
+        .admin-badge { background-color: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
     </style>
 </head>
 <body>
+
     <nav class="navbar">
-        <div class="nav-brand">Genealogy Semantics Hub</div>
-        <div class="nav-links">
-            <a href="/family-network" class="nav-item">Network Visualizer</a>
-            <a href="/relations-table" class="nav-item">Kinship Matrix</a>
-            <a href="/manage-households" class="nav-item" style="color: #ffffff; font-weight: bold;">Household Management</a>
-            <a href="/link-alliances" class="nav-item">Link Alliances</a>
-        </div>
-    </nav>
+    <div class="nav-brand">Relationship Tracker</div>
+    <div class="nav-links" style="display: flex; align-items: center; gap: 20px;">
+        <a href="/family-network" class="nav-item">Network Visualizer</a>
+        <a href="/relations-table" class="nav-item" style="color: #ffffff; font-weight: bold;">Kinship Matrix</a>
+        <a th:if="${isHead}" href="/manage-households" class="nav-item">Household Management</a>
+        <a th:if="${isHead}" href="/link-alliances" class="nav-item">Link Alliances</a>
+        
+        <a href="/logout" style="background: #dc2626; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: 500;">Switch User</a>
+    </div>
+	</nav>
 
     <div class="container">
+    	<div class="user-banner">
+            Logged in as: <strong th:text="${currentUser != null ? currentUser.fullName : 'Guest'}">User Name</strong> 
+            <span th:if="${isHead}" class="admin-badge">Household Head (Full Access)</span>
+            <span th:unless="${isHead}" class="admin-badge" style="background-color: #fef3c7; color: #b45309;">Member View (Restricted)</span>
+        </div>
+    
         <h2>Household Operations</h2>
         <p>Manage members, promote children to household heads, and structure family branches.</p>
 
@@ -42,11 +53,11 @@
                 <form action="/api/households/add-member" method="post">
                     <div class="form-group">
                         <label>National ID (NID)</label>
-                        <input type="text" name="nationalId" required placeholder="e.g., NID-1004" />
+                        <input type="text" name="nationalId" required placeholder="e.g: 1234xxxx7890" />
                     </div>
                     <div class="form-group">
                         <label>Full Name</label>
-                        <input type="text" name="fullName" required placeholder="e.g., Rajesh Sharma" />
+                        <input type="text" name="fullName" required placeholder="e.g: Krishnan" />
                     </div>
                     <div class="form-group">
                         <label>Relation to Head</label>
@@ -81,6 +92,51 @@
                     <button type="submit" style="background-color: #047857;">Promote to Household Head</button>
                 </form>
             </div>
+            
+         <div class="card" style="margin-top: 30px; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+		    <h3>Transfer Member to Another Household</h3>
+		    <p style="font-size: 13px; color: #64748b;">Move an existing family member to a new household head and update their relationship role.</p>
+		    
+		    <form th:action="@{/api/households/transfer-member}" method="post" style="display: grid; gap: 15px; max-width: 500px;">
+		        <div>
+		            <label style="display: block; font-weight: bold; font-size: 13px; margin-bottom: 5px;">Select Member:</label>
+		            <select name="memberNid" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+		                <option value="" disabled selected>-- Choose member to move --</option>
+		                <option th:each="c : ${promotableMembers}" 
+		                        th:value="${c.nationalId}" 
+		                        th:text="${c.fullName + ' (Current Role: ' + (c.relationToHead != null ? c.relationToHead : 'Member') + ')'}">
+		                </option>
+		            </select>
+		        </div>
+		
+		        <div>
+		            <label style="display: block; font-weight: bold; font-size: 13px; margin-bottom: 5px;">New Household Head:</label>
+		            <select name="newHeadNid" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+		                <option value="" disabled selected>-- Choose new head (e.g., Ganesh Das) --</option>
+		                <option th:each="head : ${familyHeads}" 
+		                        th:value="${head.nationalId}" 
+		                        th:text="${head.fullName + ' (Head)'}">
+		                </option>
+		            </select>
+		        </div>
+		
+		        <div>
+		            <label style="display: block; font-weight: bold; font-size: 13px; margin-bottom: 5px;">New Relation to Head:</label>
+		            <select name="newRelationToHead" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+		                <option value="WIFE">Wife</option>
+		                <option value="HUSBAND">Husband</option>
+		                <option value="SON">Son</option>
+		                <option value="DAUGHTER">Daughter</option>
+		                <option value="CHILD" selected>Child</option>
+		                <option value="IN_LAW">In-Law</option>
+		            </select>
+		        </div>
+		
+		        <button type="submit" style="background-color: #1e3a8a; color: white; padding: 10px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
+		            Transfer Member
+		        </button>
+		    </form>
+		</div>
         </div>
     </div>
 </body>

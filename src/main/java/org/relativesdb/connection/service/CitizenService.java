@@ -87,9 +87,8 @@ public class CitizenService {
 
         System.out.println("Found: " + citizen.getFullName() + " (Current relation: " + citizen.getRelationToHead() + ")");
 
-        // Promote to Head
         citizen.setRelationToHead("SELF");
-        citizen.setFamilyHead(null); // No longer under another roof
+        citizen.setFamilyHead(null);
 
         citizenRepository.save(citizen);
         System.out.println("Success! " + citizen.getFullName() + " is now promoted to an independent Family Head.");
@@ -133,7 +132,6 @@ public class CitizenService {
                 continue;
             }
 
-            // Reassign to new head
             member.setFamilyHead(newHead);
 
             System.out.print("Enter their new relation to " + newHead.getFullName() + " (e.g., SPOUSE, CHILD): ");
