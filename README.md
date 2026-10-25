@@ -8,6 +8,5 @@ The **Relationship Tracker** is a Spring Boot application designed to model, cal
 ## Future Updates & Roadmap
 * **Web-Based Excel Data Import:** Transition data importing from the current Eclipse/IDE console runner to an intuitive file-upload interface directly on the webpage dashboard.
 * **Role-Based Access Control (RBAC):** Enhance security and permissions so that only specific household heads or authorized members can modify alliances or split households.
-* **Graphical Tree Visualization:** Integrate a front-end tree/graph rendering library (such as D3.js or Vis.js) to display the kinship network visually alongside tabular matrices.
 * **Audit Logging & History:** Track historical lineage updates, household splits, and alliance creation dates within the MySQL database.
 * **Advanced Kinship Graph Traversal:** Expand the relationship solver to automatically calculate multi-degree distant relatives (e.g., second cousins, grand-uncles, step-relatives) beyond direct household alliances.
