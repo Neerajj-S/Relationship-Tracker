@@ -1,39 +1,23 @@
 # Relationship Tracker
 
-**Relationship Tracker** is a dynamic, Spring Boot-based genealogy and kinship management system. It bridges the gap between traditional hierarchical family trees and modern, multi-household alliance networks by resolving bidirectional kinship semantics and providing interactive relationship visualization.
+## Project Overview
+The **Relationship Tracker** is a Spring Boot application designed to model, calculate, and visualize complex family structures, intra-household relationships, and inter-household alliances. The platform structures citizens into independent households headed by designated household heads and maps multi-generational blood and marital ties (such as siblings, spouses, children, in-laws, aunts, uncles, nieces, and nephews) across allied families.
 
 ---
 
-## 🚀 The Problem
-Traditional genealogy systems often treat families as isolated, static trees, making it difficult to map complex multi-household alliances (such as inter-family marriages, senior-to-junior household branches, and collateral kinship). Furthermore, they usually lack role-scoped views, displaying global administrative data to all users alike. 
+## Current Focus & Recent Work
+We have recently stabilized the core architecture around **independent household heads (Gaurav, Ajay, and Ganesh)** and perfected the **dual-perspective kinship matrix calculation**:
 
-Relationship Tracker solves this by:
-1. **Automating Bidirectional Kinship Resolution**: Dynamically calculating accurate, gender-aware relationship terms (e.g., Father-in-law, Uncle, Niece, First Cousin) from both perspectives across linked households.
-2. **Session-Aware Role Scoping**: Enforcing security and context so that Household Heads have full administrative and alliance-management access, while regular members are restricted to viewing only their own personal relationship matrix and network perspective.
-
----
-
-## 🛠️ Tech Stack
-* **Backend**: Java, Spring Boot, Spring Data JPA
-* **Database**: Relational Database (H2 / MySQL / PostgreSQL via JPA)
-* **Frontend**: Thymeleaf, HTML5, CSS3 (Modern responsive UI)
-* **Version Control**: Git & GitHub
+1. **Decoupled Internal & External Logic:** Cleanly separated intra-household family relationships from inter-household external alliances to prevent family member bleeding between tables.
+2. **Independent Split Heads:** Successfully transitioned split family branches (like Ajay and his household) into autonomous nodes with their own unique leadership and dependent mapping.
+3. **Bidirectional Row Generation:** Implemented a symmetric row-generation strategy (`generateFullKinshipMatrix`) ensuring that whichever family logs in (Family A or Family B), their respective external relationship views populate equally and accurately.
+4. **Context-Aware Relationship Resolution:** Fixed edge cases involving sibling-bridge alliances (such as correctly separating duplicate names like "Kavya" into an aunt vs. a wife using role and ID validation) to accurately resolve generational titles like *Aunt/Niece* versus *Sister/Brother*.
 
 ---
 
-## ✨ Key Features
-* **Multi-Household Architecture**: Manage independent households with designated `Citizen` heads and members (`Relations`).
-* **Dynamic Kinship Matrix**: Generates cross-family relationship tables with real-time gender and generational offset resolution.
-* **Role-Based Access Control (Session-Aware)**: 
-  * *Household Heads* (e.g., Gaurav): Full access to household management, alliance linking, and network visualizations.
-  * *Regular Members* (e.g., Ramesh): Restricted view limited strictly to personal kinship perspectives.
-* **Network Graph Visualization**: Interactive mapping of family alliances.
-
----
-
-## 🔮 Future Updates
-* **Extended Collateral Kin**: Support for automatic calculation of second and third cousins, as well as complex "removed" generational tiers (e.g., once removed).
-* **Advanced Authentication**: Full Spring Security integration with encrypted passwords and granular user roles.
-* **Export Utilities**: Export family matrices and network trees to PDF or CSV formats.
-
----
+## Future Updates & Roadmap
+* **Web-Based Excel Data Import:** Transition data importing from the current Eclipse/IDE console runner to an intuitive file-upload interface directly on the webpage dashboard.
+* **Role-Based Access Control (RBAC):** Enhance security and permissions so that only specific household heads or authorized members can modify alliances or split households.
+* **Graphical Tree Visualization:** Integrate a front-end tree/graph rendering library (such as D3.js or Vis.js) to display the kinship network visually alongside tabular matrices.
+* **Audit Logging & History:** Track historical lineage updates, household splits, and alliance creation dates within the MySQL database.
+* **Advanced Kinship Graph Traversal:** Expand the relationship solver to automatically calculate multi-degree distant relatives (e.g., second cousins, grand-uncles, step-relatives) beyond direct household alliances.
